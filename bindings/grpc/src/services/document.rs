@@ -19,6 +19,7 @@ use tonic::Code;
 use tonic::Request;
 use tonic::Response;
 use tonic::Status;
+use std::error::Error as _;
 
 mod _document {
   tonic::include_proto!("document");
@@ -94,7 +95,8 @@ impl DocumentService for DocumentSvc {
       .client
       .publish_did_output(self.storage.key_storage().as_secret_manager(), alias_output)
       .await
-      .map_err(Error::IotaClientError)?;
+      .map_err(Error::IotaClientError)
+      .inspect_err(|e| tracing::error!("{:?}", e.source()))?;
     let did = document.id();
 
     Ok(Response::new(CreateDidResponse {

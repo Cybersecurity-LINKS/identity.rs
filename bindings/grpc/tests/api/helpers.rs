@@ -271,6 +271,9 @@ impl<K: JwkStorage, I: KeyIdStorage> Entity<K, I> {
     Ok(())
   }
 
+  pub fn secret_manager(&self) -> &SecretManager {
+    &self.secret_manager
+  }
   pub fn storage(&self) -> &Storage<K, I> {
     &self.storage
   }

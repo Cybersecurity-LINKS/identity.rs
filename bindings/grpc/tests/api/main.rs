@@ -4,3 +4,4 @@ mod health_check;
 mod helpers;
 mod jwt;
 mod sd_jwt_validation;
+mod did_document_creation;
