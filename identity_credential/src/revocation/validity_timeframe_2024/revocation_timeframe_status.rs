@@ -1,3 +1,6 @@
+// Copyright 2020-2024 IOTA Stiftung, Fondazione Links
+// SPDX-License-Identifier: Apache-2.0
+
 use crate::credential::Status;
 use crate::error::Error;
 use crate::error::Result;
@@ -175,7 +178,7 @@ mod tests {
     "startValidityTimeframe": "2024-03-19T13:57:50Z",
     "endValidityTimeframe": "2024-03-19T13:58:50Z",
     "revocationBitmapIndex": "5",
-    "type": "revocationBitmapIndex"
+    "type": "RevocationTimeframe2024"
   }"#;
 
   fn get_example_status() -> anyhow::Result<RevocationTimeframeStatus> {

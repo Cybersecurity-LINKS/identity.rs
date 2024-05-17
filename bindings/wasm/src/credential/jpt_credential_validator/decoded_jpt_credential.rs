@@ -1,3 +1,6 @@
+// Copyright 2020-2024 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 use identity_iota::core::Object;
 use identity_iota::credential::DecodedJptCredential;
 use wasm_bindgen::prelude::*;
@@ -5,6 +8,7 @@ use wasm_bindgen::prelude::*;
 use crate::common::MapStringAny;
 use crate::credential::WasmCredential;
 use crate::error::Result;
+use crate::jpt::WasmJwpIssued;
 
 #[wasm_bindgen(js_name = DecodedJptCredential)]
 pub struct WasmDecodedJptCredential(pub(crate) DecodedJptCredential<Object>);
@@ -26,6 +30,12 @@ impl WasmDecodedJptCredential {
       Some(obj) => MapStringAny::try_from(obj),
       None => Ok(MapStringAny::default()),
     }
+  }
+
+  // The decoded and verified issued JWP, will be used to construct the presented JWP.
+  #[wasm_bindgen(js_name = decodedJwp)]
+  pub fn decoded_jwp(&self) -> WasmJwpIssued {
+    WasmJwpIssued(self.0.decoded_jwp.clone())
   }
 }
 

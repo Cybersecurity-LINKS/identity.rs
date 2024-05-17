@@ -16,7 +16,7 @@ members = [
   "examples",
 ]
 
-exclude = ["bindings/wasm"]
+exclude = ["bindings/wasm", "bindings/grpc"]
 
 [workspace.dependencies]
 serde = { version = "1.0", default-features = false, features = ["alloc", "derive"] }
@@ -24,7 +24,7 @@ thiserror = { version = "1.0", default-features = false }
 strum = { version = "0.25", default-features = false, features = ["std", "derive"] }
 serde_json = { version = "1.0", default-features = false }
 json-proof-token = { version = "0.3.5" }
-zkryptium = { version = "0.2.1", default-features = false, features = ["bbsplus"] }
+zkryptium = { version = "0.2.2", default-features = false, features = ["bbsplus"] }
 
 [workspace.package]
 authors = ["IOTA Stiftung"]
@@ -33,3 +33,9 @@ homepage = "https://www.iota.org"
 license = "Apache-2.0"
 repository = "https://github.com/iotaledger/identity.rs"
 rust-version = "1.65"
+
+[patch.crates-io]
+iota_stronghold = { git = "https://github.com/tensor-programming/stronghold.rs.git", branch = "feat/expose_runner" }
+
+[workspace.lints.clippy]
+result_large_err = "allow"

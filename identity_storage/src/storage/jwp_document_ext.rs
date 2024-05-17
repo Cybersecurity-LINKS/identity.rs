@@ -1,8 +1,11 @@
+// Copyright 2020-2024 IOTA Stiftung, Fondazione Links
+// SPDX-License-Identifier: Apache-2.0
+
 use super::JwkStorageDocumentError as Error;
 use crate::key_id_storage::MethodDigest;
 use crate::try_undo_key_generation;
 use crate::JwkGenOutput;
-use crate::JwkStorageExt;
+use crate::JwkStorageBbsPlusExt;
 use crate::KeyIdStorage;
 use crate::KeyType;
 use crate::Storage;
@@ -30,12 +33,12 @@ use jsonprooftoken::jwp::issued::JwpIssuedBuilder;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
-///New trait to handle JWP-based operations on DID Documents
+/// Handle JWP-based operations on DID Documents.
 #[cfg_attr(not(feature = "send-sync-storage"), async_trait(?Send))]
 #[cfg_attr(feature = "send-sync-storage", async_trait)]
 pub trait JwpDocumentExt {
   /// Generate new key material in the given `storage` and insert a new verification method with the corresponding
-  /// public key material into the DID document. This support BBS+ keys.
+  /// public key material into the DID document. This supports BBS+ keys.
   async fn generate_method_jwp<K, I>(
     &mut self,
     storage: &Storage<K, I>,
@@ -45,11 +48,11 @@ pub trait JwpDocumentExt {
     scope: MethodScope,
   ) -> StorageResult<String>
   where
-    K: JwkStorageExt,
+    K: JwkStorageBbsPlusExt,
     I: KeyIdStorage;
 
   /// Compute a JWP in the Issued form representing the Verifiable Credential
-  /// See [JSON Web Proof draft section 4.1](https://datatracker.ietf.org/doc/html/draft-ietf-jose-json-web-proof#name-issued-form)
+  /// See [JSON Web Proof draft](https://datatracker.ietf.org/doc/html/draft-ietf-jose-json-web-proof#name-issued-form)
   async fn create_issued_jwp<K, I>(
     &self,
     storage: &Storage<K, I>,
@@ -58,11 +61,11 @@ pub trait JwpDocumentExt {
     options: &JwpCredentialOptions,
   ) -> StorageResult<String>
   where
-    K: JwkStorageExt,
+    K: JwkStorageBbsPlusExt,
     I: KeyIdStorage;
 
   /// Compute a JWP in the Presented form representing the presented Verifiable Credential after the Selective
-  /// Disclosure of attributes See [JSON Web Proof draft section 4.2](https://datatracker.ietf.org/doc/html/draft-ietf-jose-json-web-proof#name-presented-form)
+  /// Disclosure of attributes See [JSON Web Proof draft](https://datatracker.ietf.org/doc/html/draft-ietf-jose-json-web-proof#name-presented-form)
   async fn create_presented_jwp(
     &self,
     presentation: &mut SelectiveDisclosurePresentation,
@@ -80,7 +83,7 @@ pub trait JwpDocumentExt {
     custom_claims: Option<Object>,
   ) -> StorageResult<Jpt>
   where
-    K: JwkStorageExt,
+    K: JwkStorageBbsPlusExt,
     I: KeyIdStorage,
     T: ToOwned<Owned = T> + Serialize + DeserializeOwned + Sync;
 
@@ -100,8 +103,8 @@ pub trait JwpDocumentExt {
 generate_method_for_document_type!(
   CoreDocument,
   ProofAlgorithm,
-  JwkStorageExt,
-  JwkStorageExt::generate_bbs,
+  JwkStorageBbsPlusExt,
+  JwkStorageBbsPlusExt::generate_bbs,
   generate_method_core_document
 );
 
@@ -117,7 +120,7 @@ impl JwpDocumentExt for CoreDocument {
     scope: MethodScope,
   ) -> StorageResult<String>
   where
-    K: JwkStorageExt,
+    K: JwkStorageBbsPlusExt,
     I: KeyIdStorage,
   {
     generate_method_core_document(self, storage, key_type, alg, fragment, scope).await
@@ -131,7 +134,7 @@ impl JwpDocumentExt for CoreDocument {
     options: &JwpCredentialOptions,
   ) -> StorageResult<String>
   where
-    K: JwkStorageExt,
+    K: JwkStorageBbsPlusExt,
     I: KeyIdStorage,
   {
     // Obtain the method corresponding to the given fragment.
@@ -177,7 +180,7 @@ impl JwpDocumentExt for CoreDocument {
       |p| p.to_bytes().map_err(|_| Error::JwpBuildingError),
     )?;
 
-    let signature = <K as JwkStorageExt>::sign_bbs(storage.key_storage(), &key_id, &data, &header, jwk)
+    let signature = <K as JwkStorageBbsPlusExt>::sign_bbs(storage.key_storage(), &key_id, &data, &header, jwk)
       .await
       .map_err(Error::KeyStorageError)?;
 
@@ -235,7 +238,7 @@ impl JwpDocumentExt for CoreDocument {
     custom_claims: Option<Object>,
   ) -> StorageResult<Jpt>
   where
-    K: JwkStorageExt,
+    K: JwkStorageBbsPlusExt,
     I: KeyIdStorage,
     T: ToOwned<Owned = T> + Serialize + DeserializeOwned + Sync,
   {
@@ -273,8 +276,8 @@ mod iota_document {
   generate_method_for_document_type!(
     IotaDocument,
     ProofAlgorithm,
-    JwkStorageExt,
-    JwkStorageExt::generate_bbs,
+    JwkStorageBbsPlusExt,
+    JwkStorageBbsPlusExt::generate_bbs,
     generate_method_iota_document
   );
 
@@ -290,7 +293,7 @@ mod iota_document {
       scope: MethodScope,
     ) -> StorageResult<String>
     where
-      K: JwkStorageExt,
+      K: JwkStorageBbsPlusExt,
       I: KeyIdStorage,
     {
       generate_method_iota_document(self, storage, key_type, alg, fragment, scope).await
@@ -304,7 +307,7 @@ mod iota_document {
       options: &JwpCredentialOptions,
     ) -> StorageResult<String>
     where
-      K: JwkStorageExt,
+      K: JwkStorageBbsPlusExt,
       I: KeyIdStorage,
     {
       self
@@ -334,7 +337,7 @@ mod iota_document {
       custom_claims: Option<Object>,
     ) -> StorageResult<Jpt>
     where
-      K: JwkStorageExt,
+      K: JwkStorageBbsPlusExt,
       I: KeyIdStorage,
       T: ToOwned<Owned = T> + Serialize + DeserializeOwned + Sync,
     {
